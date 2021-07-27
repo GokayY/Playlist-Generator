@@ -7,20 +7,21 @@ import spotipy as sp
 
 from spotipy.oauth2 import SpotifyClientCredentials
 
-class DataCollector:
-    config = configparser.ConfigParser()
-    config.read_file(open(r'access.ini'))
-    KEY = config.get('SPOTIFY','client_id')
-    SECRET = config.get('SPOTIFY','client_secret')
+config = configparser.ConfigParser()
+config.read_file(open(r'C:\Users\gokay\Documents\GitHub\Spotify-Recommender\recommender\src\access.cfg'))
+KEY = config.get('SPOTIFY', 'client_id')
+SECRET = config.get('SPOTIFY', 'client_secret')
 
-    AUTH_URL = "https://accounts.spotify.com/api/token"
-    auth_response = requests.post(AUTH_URL, {'grant_type': 'client_credentials',
-                                             'client_id': KEY,
-                                             'client_secret': SECRET,})
+AUTH_URL = "https://accounts.spotify.com/api/token"
+auth_response = requests.post(AUTH_URL, {'grant_type': 'client_credentials',
+                                         'client_id': KEY,
+                                         'client_secret': SECRET, })
 
-    auth_response_data = auth_response.json()
-    access_token = auth_response_data['access_token']
-    headers = {'Authorization': 'Bearer {token}'.format(token=access_token)}
+auth_response_data = auth_response.json()
+access_token = auth_response_data['access_token']
+headers = {'Authorization': f'Bearer {access_token}'}
+
+class data_collector:
 
     def get_song_data_by_artist_name(artist_name):
         """
@@ -36,17 +37,14 @@ class DataCollector:
         albums_base = "https://api.spotify.com/v1/artists/"
 
         # Requests for Artist and Albums
-        try:
-            r = requests.get(artists_base + f'search?q="{artist_name}"&type=artist', headers = headers)
-            r = r.json()
-            artist_id =  r['artists']['items'][0]['id']
-            r = requests.get(albums_base +f"{artist_id}/albums?limit=50", headers=headers)
-            r = r.json()
-        except Exception as e:
-            print(e)
+        response_1 = requests.get(artists_base + f'search?q="{artist_name}"&type=artist', headers = headers)
+        result_1 = response_1.json()
+        artist_id =  result_1['artists']['items'][0]['id']
+        response_2 = requests.get(albums_base +f"{artist_id}/albums?limit=50", headers=headers)
+        result_2 = response_2.json()
 
         # Collecting Albums for the Artist
-        dataframe = pd.DataFrame(r['items'])
+        dataframe = pd.DataFrame(result_2['items'])
         dataframe['uri'] = dataframe['uri'].apply(lambda x: x.split(":")[-1])
         dataframe = dataframe[(dataframe['album_group'] == 'album') | (dataframe['album_group'] == 'single')]
         dataframe = dataframe.rename(columns={'id':'album_id', 'name':'album_name'})
@@ -116,3 +114,5 @@ class DataCollector:
         tracks_df = pd.merge(tracks_df, features_df, on='id', how='inner')
         return tracks_df
 
+
+data = data_collector.get_song_data_by_artist_name("Radiohead")
