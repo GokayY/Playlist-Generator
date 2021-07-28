@@ -1,11 +1,6 @@
-import os
 import configparser
-import json
-import requests
 import pandas as pd
-import spotipy as sp
-
-from spotipy.oauth2 import SpotifyClientCredentials
+import requests
 
 
 class DataCollector:

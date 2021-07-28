@@ -22,5 +22,3 @@ class DBConnection:
             return conn
         except Exception as e:
             print("Connection Error: " + str(e))
-
-

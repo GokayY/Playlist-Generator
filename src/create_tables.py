@@ -38,4 +38,3 @@ except Exception as e:
     print("Failed: " + str(e))
     print("Rollbacked.")
     conn.rollback()
-
